@@ -1,4 +1,4 @@
-package chandu.project.labreportlogger
+package madproject.chandu.labreportlogger
 
 import org.junit.Test
 

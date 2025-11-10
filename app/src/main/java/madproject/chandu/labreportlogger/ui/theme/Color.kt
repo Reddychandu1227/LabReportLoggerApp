@@ -1,4 +1,4 @@
-package chandu.project.labreportlogger.ui.theme
+package madproject.chandu.labreportlogger.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

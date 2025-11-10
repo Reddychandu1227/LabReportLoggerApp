@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "306438222589",
+    "project_id": "reportlogger",
+    "storage_bucket": "reportlogger.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:306438222589:android:ad1368351463cb7aa3c494",
+        "android_client_info": {
+          "package_name": "madproject.chandu.labreportlogger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1iLefgnGMukLtsqflfEUaVJSV4Ebc3dQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

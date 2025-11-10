@@ -1,12 +1,11 @@
-package chandu.project.labreportlogger
+package madproject.chandu.labreportlogger
 
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,12 +36,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.database.FirebaseDatabase
+import kotlin.jvm.java
 
 class SignInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +57,7 @@ class SignInActivity : ComponentActivity() {
 @Composable
 fun LabReportloginScreen() {
 
-    var fullName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
 
@@ -64,12 +65,15 @@ fun LabReportloginScreen() {
 
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = colorResource(id = R.color.crimson_red))
     ) {
         Spacer(modifier = Modifier.weight(1f))
         // Login title
         Text(
             text = "Login",
+            color = Color.White,
             style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
                 .padding(bottom = 12.dp)
@@ -86,21 +90,35 @@ fun LabReportloginScreen() {
             Column(
                 modifier = Modifier
                     .width(300.dp)
-                    .background(Color.White)
+                    .background(color = colorResource(id = R.color.crimson_red))
             )
             {
 
                 // User Name TextField
                 OutlinedTextField(
-                    value = fullName,
-                    onValueChange = { fullName = it },
+                    value = email,
+                    onValueChange = { email = it },
                     label = { Text("Enter Email") },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Default.Email, // Replace with desired icon
-                            contentDescription = "Email Icon"
+                            imageVector = Icons.Default.Email,
+                            contentDescription = "Email Icon",
+                            tint = Color.White
                         )
                     },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.Gray,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        focusedLeadingIconColor = Color.White,
+                        unfocusedLeadingIconColor = Color.Gray,
+                        focusedIndicatorColor = Color.White,
+                        unfocusedIndicatorColor = Color.Gray,
+                        cursorColor = Color.White
+                    ),
                     modifier = Modifier
                         .width(250.dp)
                         .padding(vertical = 0.dp)
@@ -115,9 +133,24 @@ fun LabReportloginScreen() {
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock, // Replace with desired icon
-                            contentDescription = "Email Icon"
+                            contentDescription = "Email Icon",
+                            tint = Color.White
                         )
                     },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.Gray,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        focusedLeadingIconColor = Color.White,
+                        unfocusedLeadingIconColor = Color.Gray,
+                        focusedIndicatorColor = Color.White,
+                        unfocusedIndicatorColor = Color.Gray,
+                        cursorColor = Color.White
+                    ),
+
                     modifier = Modifier
                         .width(250.dp)
                         .padding(vertical = 0.dp)
@@ -130,8 +163,21 @@ fun LabReportloginScreen() {
 
             Image(
                 modifier = Modifier.clickable {
-//                    context.startActivity(Intent(context, MyTaskActivity::class.java))
-//                    context.finish()
+                    when {
+                        email.isEmpty() -> {
+                            Toast.makeText(context, " Please Enter Mail", Toast.LENGTH_SHORT).show()
+                        }
+
+                        password.isEmpty() -> {
+                            Toast.makeText(context, " Please Enter Password", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+
+                        else -> {
+                            signInGuest(email, password, context)
+                        }
+
+                    }
                 },
                 painter = painterResource(id = R.drawable.baseline_arrow_circle_right_36),
                 contentDescription = "Lab Report Logger",
@@ -144,11 +190,10 @@ fun LabReportloginScreen() {
 
         Button(
             onClick = {
-//                context.startActivity(Intent(context, SignUpActivity::class.java))
-//                context.finish()
+                context.startActivity(Intent(context, SignUpActivity::class.java))
+                context.finish()
             },
             modifier = Modifier
-                .width(120.dp)
                 .height(50.dp),
             shape = RoundedCornerShape(
                 topEnd = 16.dp, // Adjust radius as needed
@@ -159,7 +204,7 @@ fun LabReportloginScreen() {
                 contentColor = Color.Black
             )
         ) {
-            Text("Register")
+            Text("New to app? Register")
         }
 
 
@@ -176,4 +221,41 @@ fun LabReportloginScreen() {
 @Composable
 fun LoginScreenPreview() {
     LabReportloginScreen()
+}
+
+private fun signInGuest(useremail: String, userpassword: String, context: Activity) {
+    val db = FirebaseDatabase.getInstance()
+    val sanitizedUid = useremail.replace(".", ",")
+    val ref = db.getReference("Users").child(sanitizedUid)
+
+    ref.get().addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+            val userData = task.result?.getValue(UserData::class.java)
+            checkAndGO(useremail, userpassword, context, userData)
+        } else {
+            Toast.makeText(
+                context,
+                "Failed to retrieve user data: ${task.exception?.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+}
+
+fun checkAndGO(
+    useremail: String,
+    userpassword: String,
+    context: Activity,
+    userData: UserData?
+) {
+    if (userData != null) {
+        if (userData.userpassword == userpassword) {
+            Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+
+        } else {
+            Toast.makeText(context, "Invalid Password", Toast.LENGTH_SHORT).show()
+        }
+    } else {
+        Toast.makeText(context, "No user data found", Toast.LENGTH_SHORT).show()
+    }
 }
