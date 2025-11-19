@@ -252,6 +252,8 @@ fun checkAndGO(
         if (userData.userpassword == userpassword) {
             Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
 
+            context.startActivity(Intent(context, HomeActivity::class.java))
+            context.finish()
         } else {
             Toast.makeText(context, "Invalid Password", Toast.LENGTH_SHORT).show()
         }
