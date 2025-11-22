@@ -1,5 +1,6 @@
 package madproject.chandu.labreportlogger
 
+import UploadReportScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,6 +34,12 @@ class HomeActivity : ComponentActivity() {
             HomeScreen()
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen()
 }
 
 @Composable
@@ -56,12 +64,7 @@ sealed class BottomNavItem(val route: String, val title: String, val icon: Image
 }
 
 
-@Composable
-fun UploadReportScreen() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Upload Report Screen")
-    }
-}
+
 
 @Composable
 fun MyReportsScreen() {

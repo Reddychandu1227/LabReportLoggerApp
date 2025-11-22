@@ -53,7 +53,6 @@ fun BrandDisplay() {
     DisposableEffect(Unit) {
         val job = CoroutineScope(Dispatchers.Main).launch {
             delay(3000)
-//            onLoginClick(if (UserDetails.getLoginStatus(context)) 1 else 2)
             context.startActivity(Intent(context, SignInActivity::class.java))
             context.finish()
         }

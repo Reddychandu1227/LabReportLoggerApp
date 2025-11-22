@@ -1,6 +1,8 @@
 package madproject.chandu.labreportlogger
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -53,6 +55,11 @@ class SignInActivity : ComponentActivity() {
     }
 }
 
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this // Found the activity
+    is ContextWrapper -> baseContext.findActivity() // Unwrap and continue searching
+    else -> null
+}
 
 @Composable
 fun LabReportloginScreen() {
@@ -60,9 +67,7 @@ fun LabReportloginScreen() {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-
-    val context = LocalContext.current as Activity
-
+    val context = LocalContext.current.findActivity()
 
     Column(
         modifier = Modifier
@@ -169,17 +174,16 @@ fun LabReportloginScreen() {
                         }
 
                         password.isEmpty() -> {
-                            Toast.makeText(context, " Please Enter Password", Toast.LENGTH_SHORT)
-                                .show()
+                            Toast.makeText(context, " Please Enter Password", Toast.LENGTH_SHORT).show()
                         }
 
                         else -> {
-                            signInGuest(email, password, context)
+                            signInGuest(email, password, context!!)
                         }
 
                     }
                 },
-                painter = painterResource(id = R.drawable.baseline_arrow_circle_right_36),
+                painter = painterResource(id = R.drawable.outline_arrow_forward_24),
                 contentDescription = "Lab Report Logger",
             )
 
@@ -190,7 +194,7 @@ fun LabReportloginScreen() {
 
         Button(
             onClick = {
-                context.startActivity(Intent(context, SignUpActivity::class.java))
+                context!!.startActivity(Intent(context, SignUpActivity::class.java))
                 context.finish()
             },
             modifier = Modifier

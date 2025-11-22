@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.firebase.database.FirebaseDatabase
 
@@ -54,7 +55,11 @@ class SignUpActivity : ComponentActivity() {
     }
 }
 
-
+@Preview(showBackground = true)
+@Composable
+fun LabReportRegisterScreenPreview() {
+    LabReportRegisterScreen()
+}
 
 @Composable
 fun LabReportRegisterScreen() {
@@ -66,7 +71,7 @@ fun LabReportRegisterScreen() {
     var password by remember { mutableStateOf("") }
 
 
-    val context = LocalContext.current as Activity
+    val context = LocalContext.current.findActivity()
 
 
     Column(
@@ -253,10 +258,10 @@ fun LabReportRegisterScreen() {
                             useremail = email,
                             userpassword = password
                         )
-                        signUpGuest(residentData, context)
+                        signUpGuest(residentData, context!!)
                     }
                 },
-                painter = painterResource(id = R.drawable.baseline_arrow_circle_right_36),
+                painter = painterResource(id = R.drawable.outline_arrow_forward_24),
                 contentDescription = "Lab Report Logger",
             )
 
@@ -267,7 +272,7 @@ fun LabReportRegisterScreen() {
 
         Button(
             onClick = {
-                context.startActivity(Intent(context, SignUpActivity::class.java))
+                context!!.startActivity(Intent(context, SignUpActivity::class.java))
                 context.finish()
             },
             modifier = Modifier
