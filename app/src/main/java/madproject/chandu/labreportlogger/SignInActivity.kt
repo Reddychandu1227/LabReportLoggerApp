@@ -56,8 +56,8 @@ class SignInActivity : ComponentActivity() {
 }
 
 fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this // Found the activity
-    is ContextWrapper -> baseContext.findActivity() // Unwrap and continue searching
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
     else -> null
 }
 
