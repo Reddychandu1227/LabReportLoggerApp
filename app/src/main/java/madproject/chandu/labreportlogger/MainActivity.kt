@@ -89,6 +89,10 @@ fun BrandDisplayScreen() {
 
             Spacer(modifier = Modifier.height(6.dp))
 
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Spacer(modifier = Modifier.height(6.dp))
+
             Text(
                 text = "Lab Report Logger",
                 color = colorResource(id = R.color.soft_peach),
