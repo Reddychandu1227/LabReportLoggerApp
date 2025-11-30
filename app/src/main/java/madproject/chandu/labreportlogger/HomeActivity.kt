@@ -1,9 +1,6 @@
 package madproject.chandu.labreportlogger
 
 import UploadReportScreen
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,15 +23,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import madproject.chandu.labreportlogger.screens.MyReportsScreen
 
-class HomeActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            HomeScreen()
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
@@ -51,7 +41,7 @@ fun HomeScreen() {
             BottomNavigationBar(navController)
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
             NavigationGraph(navController)
         }
     }
@@ -63,23 +53,12 @@ sealed class BottomNavItem(val route: String, val title: String, val icon: Image
     object Profile : BottomNavItem("profile", "Profile", Icons.Default.Person)
 }
 
-
-
-
-@Composable
-fun MyReportsScreen() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("My Reports Screen")
-    }
-}
-
 @Composable
 fun ProfileScreen() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Profile Screen")
     }
 }
-
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {

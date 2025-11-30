@@ -1,12 +1,8 @@
 package madproject.chandu.labreportlogger
 
-import android.R.attr.name
 import android.app.Activity
 import android.content.Intent
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,25 +40,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.google.firebase.database.FirebaseDatabase
+import madproject.chandu.labreportlogger.ui.theme.crimsonRed
+import kotlin.jvm.java
 
-class SignUpActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            LabReportRegisterScreen()
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
 fun LabReportRegisterScreenPreview() {
-    LabReportRegisterScreen()
+    LabReportRegisterScreen(navController = NavHostController(LocalContext.current))
 }
 
 @Composable
-fun LabReportRegisterScreen() {
+fun LabReportRegisterScreen(navController: NavController) {
 
     var fullName by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
@@ -77,7 +69,7 @@ fun LabReportRegisterScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = colorResource(id = R.color.crimson_red))
+            .background(color = crimsonRed)
     ) {
         Spacer(modifier = Modifier.weight(1f))
         // Login title
@@ -250,7 +242,7 @@ fun LabReportRegisterScreen() {
                     if (password.isEmpty()) {
                         Toast.makeText(context, "Enter Password", Toast.LENGTH_SHORT).show()
                         return@clickable
-                    }else {
+                    } else {
 
                         val residentData = UserData(
                             username = fullName,
@@ -258,7 +250,7 @@ fun LabReportRegisterScreen() {
                             useremail = email,
                             userpassword = password
                         )
-                        signUpGuest(residentData, context!!)
+                        signUpGuest(residentData, context!!,navController)
                     }
                 },
                 painter = painterResource(id = R.drawable.outline_arrow_forward_24),
@@ -272,8 +264,12 @@ fun LabReportRegisterScreen() {
 
         Button(
             onClick = {
-                context!!.startActivity(Intent(context, SignUpActivity::class.java))
-                context.finish()
+                navController.navigate(AppScreens.Login.route) {
+                    popUpTo(AppScreens.Register.route) {
+                        inclusive = true
+                    }
+                }
+
             },
             modifier = Modifier
                 .height(50.dp),
@@ -296,14 +292,14 @@ fun LabReportRegisterScreen() {
     }
 }
 
-private fun signUpGuest(userData: UserData, context: Activity) {
+private fun signUpGuest(userData: UserData, context: Activity,navController: NavController) {
     val db = FirebaseDatabase.getInstance()
     val ref = db.getReference("Users")
 
     ref.child(userData.useremail.replace(".", ",")).setValue(userData)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                checkandLogin(context)
+                checkandLogin(context, navController = navController)
             } else {
                 Toast.makeText(
                     context,
@@ -321,10 +317,15 @@ private fun signUpGuest(userData: UserData, context: Activity) {
         }
 }
 
-fun checkandLogin(context: Activity) {
+fun checkandLogin(context: Activity,navController: NavController) {
     Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
-    context.startActivity(Intent(context, SignInActivity::class.java))
-    context.finish()
+
+    navController.navigate(AppScreens.Login.route) {
+        popUpTo(AppScreens.Register.route) {
+            inclusive = true
+        }
+    }
+
 }
 
 

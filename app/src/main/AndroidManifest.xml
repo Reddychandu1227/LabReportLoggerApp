@@ -2,6 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- CAMERA for taking picture -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Required for picking images from Gallery on Android 12 and below -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- Required for picking images from Gallery on Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/icon_lab_report_logger"
@@ -10,15 +20,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LabReportLogger"
         tools:targetApi="31">
-        <activity
-            android:name=".HomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SignUpActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SignInActivity"
-            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

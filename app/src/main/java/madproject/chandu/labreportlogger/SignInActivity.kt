@@ -3,11 +3,7 @@ package madproject.chandu.labreportlogger
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.Intent
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,17 +39,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.google.firebase.database.FirebaseDatabase
-import kotlin.jvm.java
+import madproject.chandu.labreportlogger.ui.theme.crimsonRed
 
-class SignInActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            LabReportloginScreen()
-        }
-    }
-}
 
 fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
@@ -62,7 +52,7 @@ fun Context.findActivity(): Activity? = when (this) {
 }
 
 @Composable
-fun LabReportloginScreen() {
+fun LabReportloginScreen(navController: NavController) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -72,7 +62,7 @@ fun LabReportloginScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = colorResource(id = R.color.crimson_red))
+            .background(color = crimsonRed)
     ) {
         Spacer(modifier = Modifier.weight(1f))
         // Login title
@@ -137,7 +127,7 @@ fun LabReportloginScreen() {
                     label = { Text("Enter Password") },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Default.Lock, // Replace with desired icon
+                            imageVector = Icons.Default.Lock,
                             contentDescription = "Email Icon",
                             tint = Color.White
                         )
@@ -178,7 +168,7 @@ fun LabReportloginScreen() {
                         }
 
                         else -> {
-                            signInGuest(email, password, context!!)
+                            signInGuest(email, password, context!!,navController)
                         }
 
                     }
@@ -194,8 +184,13 @@ fun LabReportloginScreen() {
 
         Button(
             onClick = {
-                context!!.startActivity(Intent(context, SignUpActivity::class.java))
-                context.finish()
+
+                navController.navigate(AppScreens.Register.route) {
+                    popUpTo(AppScreens.Login.route) {
+                        inclusive = true
+                    }
+                }
+
             },
             modifier = Modifier
                 .height(50.dp),
@@ -224,10 +219,10 @@ fun LabReportloginScreen() {
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LabReportloginScreen()
+    LabReportloginScreen(navController = NavHostController(LocalContext.current))
 }
 
-private fun signInGuest(useremail: String, userpassword: String, context: Activity) {
+private fun signInGuest(useremail: String, userpassword: String, context: Activity,navController: NavController) {
     val db = FirebaseDatabase.getInstance()
     val sanitizedUid = useremail.replace(".", ",")
     val ref = db.getReference("Users").child(sanitizedUid)
@@ -235,7 +230,7 @@ private fun signInGuest(useremail: String, userpassword: String, context: Activi
     ref.get().addOnCompleteListener { task ->
         if (task.isSuccessful) {
             val userData = task.result?.getValue(UserData::class.java)
-            checkAndGO(useremail, userpassword, context, userData)
+            checkAndGO(useremail, userpassword, context, userData,navController)
         } else {
             Toast.makeText(
                 context,
@@ -250,14 +245,29 @@ fun checkAndGO(
     useremail: String,
     userpassword: String,
     context: Activity,
-    userData: UserData?
+    userData: UserData?,
+    navController: NavController
 ) {
     if (userData != null) {
         if (userData.userpassword == userpassword) {
+
+            UserPrefs.markLoginStatus(context, true)
+            UserPrefs.saveEmail(
+                context,
+                email = useremail
+            )
+            UserPrefs.saveName(context, userData.username)
+
+
             Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
 
-            context.startActivity(Intent(context, HomeActivity::class.java))
-            context.finish()
+            navController.navigate(AppScreens.Home.route) {
+                popUpTo(AppScreens.Login.route) {
+                    inclusive = true
+                }
+            }
+
+
         } else {
             Toast.makeText(context, "Invalid Password", Toast.LENGTH_SHORT).show()
         }

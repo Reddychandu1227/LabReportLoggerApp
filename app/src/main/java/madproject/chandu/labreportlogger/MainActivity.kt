@@ -1,11 +1,11 @@
 package madproject.chandu.labreportlogger
 
-import android.app.Activity
-import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,11 +27,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import madproject.chandu.labreportlogger.ui.theme.LabReportLoggerTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import madproject.chandu.labreportlogger.ui.theme.LabReportLoggerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,28 +40,74 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LabReportLoggerTheme {
-                BrandDisplay()
+                MyAppNavGraph()
             }
         }
     }
 
 }
 
-@Composable
-fun BrandDisplay() {
-    val context = LocalContext.current as Activity
 
-    DisposableEffect(Unit) {
-        val job = CoroutineScope(Dispatchers.Main).launch {
-            delay(3000)
-            context.startActivity(Intent(context, SignInActivity::class.java))
-            context.finish()
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun MyAppNavGraph() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = AppScreens.Splash.route
+    ) {
+        composable(AppScreens.Splash.route) {
+            BrandDisplay(navController = navController)
         }
-        onDispose { job.cancel() }
+
+        composable(AppScreens.Login.route) {
+            LabReportloginScreen(navController = navController)
+        }
+
+        composable(AppScreens.Register.route) {
+            LabReportRegisterScreen(navController = navController)
+        }
+
+        composable(AppScreens.Home.route) {
+            HomeScreen()
+        }
+
+
+
+    }
+
+}
+
+
+@Composable
+fun BrandDisplay(navController: NavController) {
+
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        delay(3000)
+
+        if (UserPrefs.checkLoginStatus(context)) {
+            navController.navigate(AppScreens.Home.route) {
+                popUpTo(AppScreens.Splash.route) {
+                    inclusive = true
+                }
+            }
+        } else {
+            navController.navigate(AppScreens.Login.route) {
+                popUpTo(AppScreens.Splash.route) {
+                    inclusive = true
+                }
+            }
+        }
+
     }
 
     BrandDisplayScreen()
 }
+
+
 
 @Composable
 fun BrandDisplayScreen() {
