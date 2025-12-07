@@ -1,6 +1,5 @@
 package madproject.chandu.labreportlogger
 
-import UploadReportScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,23 +16,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import madproject.chandu.labreportlogger.screens.LabReport
 import madproject.chandu.labreportlogger.screens.MyReportsScreen
+import madproject.chandu.labreportlogger.screens.ProfileScreen
+import madproject.chandu.labreportlogger.screens.ReportDetailsRouteHandler
+import madproject.chandu.labreportlogger.screens.ReportDetailsScreen
+import madproject.chandu.labreportlogger.screens.UploadReportScreen
 
 
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen(homenavController = NavHostController(LocalContext.current))
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(homenavController: NavController) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -42,7 +48,7 @@ fun HomeScreen() {
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
-            NavigationGraph(navController)
+            NavigationGraph(navController,homenavController)
         }
     }
 }
@@ -53,24 +59,71 @@ sealed class BottomNavItem(val route: String, val title: String, val icon: Image
     object Profile : BottomNavItem("profile", "Profile", Icons.Default.Person)
 }
 
-@Composable
-fun ProfileScreen() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Profile Screen")
-    }
-}
 
 @Composable
-fun NavigationGraph(navController: NavHostController) {
+fun NavigationGraph(navController: NavHostController,homenavController: NavController) {
+
+    val context = LocalContext.current
+
+
     NavHost(
         navController = navController,
         startDestination = BottomNavItem.Upload.route
     ) {
-        composable(BottomNavItem.Upload.route) { UploadReportScreen() }
-        composable(BottomNavItem.Reports.route) { MyReportsScreen() }
-        composable(BottomNavItem.Profile.route) { ProfileScreen() }
+
+        // ---------------- Upload Screen ----------------
+        composable(BottomNavItem.Upload.route) {
+            UploadReportScreen()
+        }
+
+        // ---------------- Reports List Screen ----------------
+        composable(BottomNavItem.Reports.route) {
+            MyReportsScreen(onViewReport = { report ->
+                navController.navigate("reportDetails/${report.reportId}")
+            })
+        }
+
+        // ---------------- Profile ----------------
+        composable(BottomNavItem.Profile.route) {
+
+            val context = LocalContext.current
+
+            ProfileScreen(
+                onLogout = {
+                    // Mark user logged out
+                    UserPrefs.markLoginStatus(context, false)
+
+                    // 1. Clear bottom-nav controller backstack completely
+                    navController.navigate(BottomNavItem.Upload.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+
+                    // 2. Navigate using HOME nav controller to login
+                    homenavController.navigate(AppScreens.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+
+
+        // ---------------- Report Details Screen ----------------
+        composable(
+            route = "reportDetails/{reportId}"
+        ) { backStackEntry ->
+
+            val reportId = backStackEntry.arguments?.getString("reportId") ?: ""
+
+            ReportDetailsRouteHandler(
+                reportId = reportId,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
+
 
 
 @Composable

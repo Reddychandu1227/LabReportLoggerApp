@@ -32,6 +32,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
+import madproject.chandu.labreportlogger.R
 import madproject.chandu.labreportlogger.ui.theme.LabReportLoggerTheme
 
 class MainActivity : ComponentActivity() {
@@ -70,7 +71,7 @@ fun MyAppNavGraph() {
         }
 
         composable(AppScreens.Home.route) {
-            HomeScreen()
+            HomeScreen(homenavController = navController)
         }
 
 
