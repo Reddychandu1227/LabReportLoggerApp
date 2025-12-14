@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import madproject.chandu.labreportlogger.UserPrefs
+import madproject.chandu.labreportlogger.ui.theme.crimsonRed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +33,11 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Profile", fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+                title = { Text("Profile", fontSize = 22.sp, fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = crimsonRed,
+                    titleContentColor = Color.White,
+                )
             )
         }
     ) { padding ->

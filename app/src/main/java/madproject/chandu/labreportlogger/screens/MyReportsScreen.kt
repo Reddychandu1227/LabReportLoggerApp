@@ -100,7 +100,11 @@ fun MyReportsScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("My Reports", fontSize = 22.sp) }
+                title = { Text("My Reports", fontSize = 22.sp) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = crimsonRed,
+                    titleContentColor = Color.White,
+                )
             )
         }
     ) { padding ->

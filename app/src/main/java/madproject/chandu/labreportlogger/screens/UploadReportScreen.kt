@@ -36,8 +36,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -49,6 +51,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +74,7 @@ import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import madproject.chandu.labreportlogger.UserPrefs
+import madproject.chandu.labreportlogger.ui.theme.crimsonRed
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -166,10 +171,16 @@ fun UploadReportScreen() {
 
     // ---------------- UI ----------------
 
+
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Add Report", fontSize = 22.sp) }
+                title = { Text("Add Report", fontSize = 22.sp) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = crimsonRed,
+                    titleContentColor = Color.White,
+                )
             )
         }
     ) {
@@ -327,7 +338,13 @@ fun UploadReportScreen() {
                     }
                 },
                 enabled = !isUploading,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonColors(
+                    containerColor = crimsonRed,
+                    contentColor = Color.White,
+                    disabledContainerColor = Color.Gray,
+                    disabledContentColor = Color.LightGray
+                )
             ) {
                 if (isUploading)
                     CircularProgressIndicator(
