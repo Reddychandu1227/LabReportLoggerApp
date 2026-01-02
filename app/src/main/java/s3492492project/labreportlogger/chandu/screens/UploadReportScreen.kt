@@ -1,8 +1,4 @@
-// ------------------------------------------------------------
-// FULL MULTI-IMAGE REPORT UPLOAD SCREEN
-// ------------------------------------------------------------
-
-package madproject.chandu.labreportlogger.screens
+package s3492492project.labreportlogger.chandu.screens
 
 import android.Manifest
 import android.app.DatePickerDialog
@@ -36,7 +32,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -51,7 +46,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -73,8 +67,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import madproject.chandu.labreportlogger.UserPrefs
-import madproject.chandu.labreportlogger.ui.theme.crimsonRed
+import s3492492project.labreportlogger.chandu.UserPrefs
+import s3492492project.labreportlogger.chandu.ui.theme.crimsonRed
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -86,13 +80,17 @@ import java.util.Locale
 
 private const val IMGBB_API_KEY = "dd2c6f23d315032050b31f06adcfaf3b"
 
+
 data class LabReport(
     val reportId: String = "",
     val title: String = "",
     val category: String = "",
     val date: String = "",
-    val images: List<String> = emptyList()
+    val images: List<String> = emptyList(),
+    val isfavorite: Boolean = false
 )
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,7 +115,6 @@ fun UploadReportScreen() {
         "Discharge Summary", "Other Documents"
     )
 
-    // ---------------- DATE PICKER ----------------
     val calendar = Calendar.getInstance()
     val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
 
@@ -132,7 +129,6 @@ fun UploadReportScreen() {
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
-    // ---------------- PERMISSIONS ----------------
     val readPermission =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             Manifest.permission.READ_MEDIA_IMAGES
@@ -144,13 +140,12 @@ fun UploadReportScreen() {
             readPermission
         ) == PackageManager.PERMISSION_GRANTED
 
-    // ---------------- IMAGE PICKER ----------------
     val galleryLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
                 val list = images.toMutableList()
                 list[selectedSlot] = it
-                images = list // recompose → preview updates
+                images = list
             }
         }
 
@@ -169,9 +164,6 @@ fun UploadReportScreen() {
         }
     }
 
-    // ---------------- UI ----------------
-
-
 
     Scaffold(
         topBar = {
@@ -189,10 +181,9 @@ fun UploadReportScreen() {
             modifier = Modifier
                 .padding(it)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()) // whole screen scrollable
+                .verticalScroll(rememberScrollState())
         ) {
 
-            // REPORT NAME
             Text("Report Name", fontWeight = FontWeight.Bold)
             OutlinedTextField(
                 value = reportName,
@@ -201,7 +192,6 @@ fun UploadReportScreen() {
             )
             Spacer(Modifier.height(16.dp))
 
-            // CATEGORY
             Text("Category", fontWeight = FontWeight.Bold)
             ExposedDropdownMenuBox(
                 expanded = expandedCategory,
@@ -237,7 +227,6 @@ fun UploadReportScreen() {
 
             Spacer(Modifier.height(16.dp))
 
-            // DATE PICK
             Text("Date of Test", fontWeight = FontWeight.Bold)
             OutlinedTextField(
                 value = selectedDate,
@@ -253,13 +242,12 @@ fun UploadReportScreen() {
 
             Spacer(Modifier.height(20.dp))
 
-            // ---------------- 2×2 IMAGE GRID ----------------
             Text("Attach Up To 4 Images", fontWeight = FontWeight.Bold)
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier
-                    .height(260.dp)   // ✔ ensures preview appears
+                    .height(260.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -268,7 +256,7 @@ fun UploadReportScreen() {
 
                     Box(
                         modifier = Modifier
-                            .size(140.dp) // ✔ fixed size ensures visible grid
+                            .size(140.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color(0xFFEAEAEA))
                             .clickable { pickImage(index) },
@@ -296,7 +284,6 @@ fun UploadReportScreen() {
 
             Spacer(Modifier.height(20.dp))
 
-            // ---------------- UPLOAD BUTTON ----------------
 
             Button(
                 onClick = {

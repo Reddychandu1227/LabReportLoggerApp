@@ -1,4 +1,4 @@
-package madproject.chandu.labreportlogger
+package s3492492project.labreportlogger.chandu
 
 import android.os.Build
 import android.os.Bundle
@@ -32,8 +32,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
-import madproject.chandu.labreportlogger.R
-import madproject.chandu.labreportlogger.ui.theme.LabReportLoggerTheme
+import s3492492project.labreportlogger.chandu.R
+import s3492492project.labreportlogger.chandu.ui.theme.LabReportLoggerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -158,6 +158,28 @@ fun BrandDisplayScreen() {
             )
 
             Spacer(modifier = Modifier.weight(1f))
+
+            Text(
+                text = "Developed By",
+                color = colorResource(id = R.color.soft_peach),
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(bottom = 18.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Text(
+                text = "Chandu Reddy",
+                color = colorResource(id = R.color.soft_peach),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(bottom = 18.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
 
 
         }

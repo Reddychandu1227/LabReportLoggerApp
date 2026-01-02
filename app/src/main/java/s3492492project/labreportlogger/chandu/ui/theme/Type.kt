@@ -1,4 +1,4 @@
-package madproject.chandu.labreportlogger.ui.theme
+package s3492492project.labreportlogger.chandu.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

@@ -1,4 +1,4 @@
-package madproject.chandu.labreportlogger
+package s3492492project.labreportlogger.chandu
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

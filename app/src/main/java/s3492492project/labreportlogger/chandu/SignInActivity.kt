@@ -1,26 +1,27 @@
-package madproject.chandu.labreportlogger
+package s3492492project.labreportlogger.chandu
 
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowCircleRight
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -34,15 +35,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.google.firebase.database.FirebaseDatabase
-import madproject.chandu.labreportlogger.ui.theme.crimsonRed
+import s3492492project.labreportlogger.chandu.ui.theme.crimsonRed
 
 
 fun Context.findActivity(): Activity? = when (this) {
@@ -65,7 +64,7 @@ fun LabReportloginScreen(navController: NavController) {
             .background(color = crimsonRed)
     ) {
         Spacer(modifier = Modifier.weight(1f))
-        // Login title
+
         Text(
             text = "Login",
             color = Color.White,
@@ -81,15 +80,14 @@ fun LabReportloginScreen(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Spacer(modifier = Modifier.width(12.dp))
-            // Column with Text Fields
+
             Column(
                 modifier = Modifier
                     .width(300.dp)
-                    .background(color = colorResource(id = R.color.crimson_red))
+                    .background(color = crimsonRed)
             )
             {
 
-                // User Name TextField
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -156,26 +154,32 @@ fun LabReportloginScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Image(
-                modifier = Modifier.clickable {
-                    when {
-                        email.isEmpty() -> {
-                            Toast.makeText(context, " Please Enter Mail", Toast.LENGTH_SHORT).show()
-                        }
 
-                        password.isEmpty() -> {
-                            Toast.makeText(context, " Please Enter Password", Toast.LENGTH_SHORT).show()
-                        }
-
-                        else -> {
-                            signInGuest(email, password, context!!,navController)
-                        }
-
+            IconButton(onClick = {
+                when {
+                    email.isEmpty() -> {
+                        Toast.makeText(context, " Please Enter Mail", Toast.LENGTH_SHORT).show()
                     }
-                },
-                painter = painterResource(id = R.drawable.outline_arrow_forward_24),
-                contentDescription = "Lab Report Logger",
-            )
+
+                    password.isEmpty() -> {
+                        Toast.makeText(context, " Please Enter Password", Toast.LENGTH_SHORT).show()
+                    }
+
+                    else -> {
+                        signInGuest(email, password, context!!, navController)
+                    }
+
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowCircleRight,
+                    contentDescription = "Login",
+                    tint = Color.White,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+
+
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -195,11 +199,11 @@ fun LabReportloginScreen(navController: NavController) {
             modifier = Modifier
                 .height(50.dp),
             shape = RoundedCornerShape(
-                topEnd = 16.dp, // Adjust radius as needed
+                topEnd = 16.dp,
                 bottomEnd = 16.dp
             ),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFB0BEC5), // Adjust color as needed
+                containerColor = Color(0xFFB0BEC5),
                 contentColor = Color.Black
             )
         ) {
@@ -222,7 +226,12 @@ fun LoginScreenPreview() {
     LabReportloginScreen(navController = NavHostController(LocalContext.current))
 }
 
-private fun signInGuest(useremail: String, userpassword: String, context: Activity,navController: NavController) {
+private fun signInGuest(
+    useremail: String,
+    userpassword: String,
+    context: Activity,
+    navController: NavController
+) {
     val db = FirebaseDatabase.getInstance()
     val sanitizedUid = useremail.replace(".", ",")
     val ref = db.getReference("Users").child(sanitizedUid)
@@ -230,7 +239,7 @@ private fun signInGuest(useremail: String, userpassword: String, context: Activi
     ref.get().addOnCompleteListener { task ->
         if (task.isSuccessful) {
             val userData = task.result?.getValue(UserData::class.java)
-            checkAndGO(useremail, userpassword, context, userData,navController)
+            checkAndGO(useremail, userpassword, context, userData, navController)
         } else {
             Toast.makeText(
                 context,
@@ -257,7 +266,6 @@ fun checkAndGO(
                 email = useremail
             )
             UserPrefs.saveName(context, userData.username)
-
 
             Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
 

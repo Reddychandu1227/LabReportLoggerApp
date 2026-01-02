@@ -1,15 +1,16 @@
 {
   "project_info": {
     "project_number": "306438222589",
+    "firebase_url": "https://reportlogger-default-rtdb.firebaseio.com",
     "project_id": "reportlogger",
     "storage_bucket": "reportlogger.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:306438222589:android:ad1368351463cb7aa3c494",
+        "mobilesdk_app_id": "1:306438222589:android:04ec901771781b9aa3c494",
         "android_client_info": {
-          "package_name": "madproject.chandu.labreportlogger"
+          "package_name": "s3492492project.labreportlogger.chandu"
         }
       },
       "oauth_client": [],

@@ -1,4 +1,4 @@
-package madproject.chandu.labreportlogger
+package s3492492project.labreportlogger.chandu
 
 import android.content.Context
 

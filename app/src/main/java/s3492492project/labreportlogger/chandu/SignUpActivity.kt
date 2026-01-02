@@ -1,27 +1,27 @@
-package madproject.chandu.labreportlogger
+package s3492492project.labreportlogger.chandu
 
 import android.app.Activity
-import android.content.Intent
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowCircleRight
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -36,15 +36,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.google.firebase.database.FirebaseDatabase
-import madproject.chandu.labreportlogger.ui.theme.crimsonRed
-import kotlin.jvm.java
+import s3492492project.labreportlogger.chandu.ui.theme.crimsonRed
 
 
 @Preview(showBackground = true)
@@ -72,7 +70,7 @@ fun LabReportRegisterScreen(navController: NavController) {
             .background(color = crimsonRed)
     ) {
         Spacer(modifier = Modifier.weight(1f))
-        // Login title
+
         Text(
             text = "Register",
             color = Color.White,
@@ -88,7 +86,7 @@ fun LabReportRegisterScreen(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Spacer(modifier = Modifier.width(12.dp))
-            // Column with Text Fields
+
             Column(
                 modifier = Modifier
                     .width(300.dp)
@@ -154,7 +152,6 @@ fun LabReportRegisterScreen(navController: NavController) {
                         .padding(vertical = 0.dp)
                 )
 
-                // User Name TextField
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -220,42 +217,45 @@ fun LabReportRegisterScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Image(
-                modifier = Modifier.clickable {
+            IconButton(onClick = {
 
-                    if (fullName.isEmpty()) {
-                        Toast.makeText(context, "Enter name", Toast.LENGTH_SHORT).show()
-                        return@clickable
+                if (fullName.isEmpty()) {
+                    Toast.makeText(context, "Enter name", Toast.LENGTH_SHORT).show()
+                    return@IconButton
 
-                    }
+                }
 
-                    if (age.isEmpty()) {
-                        Toast.makeText(context, "Enter Age", Toast.LENGTH_SHORT).show()
-                        return@clickable
-                    }
+                if (age.isEmpty()) {
+                    Toast.makeText(context, "Enter Age", Toast.LENGTH_SHORT).show()
+                    return@IconButton
+                }
 
-                    if (email.isEmpty()) {
-                        Toast.makeText(context, "Enter Mail", Toast.LENGTH_SHORT).show()
-                        return@clickable
-                    }
+                if (email.isEmpty()) {
+                    Toast.makeText(context, "Enter Mail", Toast.LENGTH_SHORT).show()
+                    return@IconButton
+                }
 
-                    if (password.isEmpty()) {
-                        Toast.makeText(context, "Enter Password", Toast.LENGTH_SHORT).show()
-                        return@clickable
-                    } else {
+                if (password.isEmpty()) {
+                    Toast.makeText(context, "Enter Password", Toast.LENGTH_SHORT).show()
+                    return@IconButton
+                } else {
 
-                        val residentData = UserData(
-                            username = fullName,
-                            userAge = age,
-                            useremail = email,
-                            userpassword = password
-                        )
-                        signUpGuest(residentData, context!!,navController)
-                    }
-                },
-                painter = painterResource(id = R.drawable.outline_arrow_forward_24),
-                contentDescription = "Lab Report Logger",
-            )
+                    val residentData = UserData(
+                        username = fullName,
+                        userAge = age,
+                        useremail = email,
+                        userpassword = password
+                    )
+                    signUpGuest(residentData, context!!,navController)
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowCircleRight,
+                    contentDescription = "Register",
+                    tint = Color.White,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -274,11 +274,11 @@ fun LabReportRegisterScreen(navController: NavController) {
             modifier = Modifier
                 .height(50.dp),
             shape = RoundedCornerShape(
-                topEnd = 16.dp, // Adjust radius as needed
+                topEnd = 16.dp,
                 bottomEnd = 16.dp
             ),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFB0BEC5), // Adjust color as needed
+                containerColor = Color(0xFFB0BEC5),
                 contentColor = Color.Black
             )
         ) {
@@ -317,6 +317,13 @@ private fun signUpGuest(userData: UserData, context: Activity,navController: Nav
         }
 }
 
+data class UserData(
+    val username: String = "",
+    val useremail: String = "",
+    val userAge: String = "",
+    val userpassword: String = ""
+)
+
 fun checkandLogin(context: Activity,navController: NavController) {
     Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
 
@@ -329,9 +336,3 @@ fun checkandLogin(context: Activity,navController: NavController) {
 }
 
 
-data class UserData(
-    val username: String = "",
-    val useremail: String = "",
-    val userAge: String = "",
-    val userpassword: String = ""
-)

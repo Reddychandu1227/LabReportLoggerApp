@@ -1,11 +1,12 @@
-package madproject.chandu.labreportlogger.screens
+package s3492492project.labreportlogger.chandu.screens
 
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,19 +15,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -34,7 +36,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,24 +47,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import madproject.chandu.labreportlogger.UserPrefs
-import madproject.chandu.labreportlogger.ui.theme.crimsonRed
-import kotlin.jvm.java
+import s3492492project.labreportlogger.chandu.UserPrefs
+import s3492492project.labreportlogger.chandu.ui.theme.crimsonRed
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,21 +73,30 @@ fun MyReportsScreen(
     var reports by remember { mutableStateOf<List<LabReport>>(emptyList()) }
     var filteredReports by remember { mutableStateOf<List<LabReport>>(emptyList()) }
 
-    // Dropdown state
     var expanded by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
     var selectedCategory by remember { mutableStateOf("All Categories") }
 
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
+        isLoading = true
+
         databaseRef.child("Myreports").child(email)
             .get()
             .addOnSuccessListener { snapshot ->
-                val list = snapshot.children.mapNotNull { it.getValue(LabReport::class.java) }
+                val list = snapshot.children
+                    .mapNotNull { it.getValue(LabReport::class.java) }
+
                 reports = list.reversed()
                 filteredReports = reports
+                isLoading = false
+            }
+            .addOnFailureListener {
+                isLoading = false
+                Toast.makeText(context, "Failed to load reports", Toast.LENGTH_SHORT).show()
             }
     }
 
-    // Extract unique categories
+
     val categories = remember(reports) {
         listOf("All Categories") + reports.map { it.category }.distinct()
     }
@@ -115,7 +119,6 @@ fun MyReportsScreen(
                 .padding(16.dp)
         ) {
 
-            // ---------------- FILTER DROPDOWN ----------------
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
@@ -156,8 +159,15 @@ fun MyReportsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ---------------- NO REPORTS ----------------
-            if (filteredReports.isEmpty()) {
+            if(isLoading)
+            {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }else if (filteredReports.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -175,89 +185,141 @@ fun MyReportsScreen(
                         ElevatedCard(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 6.dp),
-                            shape = RoundedCornerShape(18.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFF9F9F9)
-                            ),
-                            elevation = CardDefaults.cardElevation(6.dp)
+                                .padding(vertical = 8.dp),
+                            shape = RoundedCornerShape(22.dp),
+                            elevation = CardDefaults.elevatedCardElevation(8.dp),
+                            colors = CardDefaults.elevatedCardColors(
+                                containerColor = Color.White
+                            )
                         ) {
 
                             Row(
                                 modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
+                                    .fillMaxWidth()
+                                    .padding(18.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
 
-                                // Thumbnail section
-                                Box(
-                                    modifier = Modifier
-                                        .size(70.dp)
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .background(Color(0xFFE0E0E0)),
-                                    contentAlignment = Alignment.Center
+                                ElevatedCard(
+                                    shape = RoundedCornerShape(18.dp),
+                                    elevation = CardDefaults.elevatedCardElevation(4.dp),
+                                    modifier = Modifier.size(76.dp),
+                                    colors = CardDefaults.elevatedCardColors(
+                                        containerColor = Color(0xFFF3F3F3)
+                                    )
                                 ) {
                                     val thumbnail = report.images.firstOrNull()
-
                                     if (thumbnail != null) {
                                         Image(
                                             painter = rememberAsyncImagePainter(thumbnail),
-                                            contentDescription = "",
+                                            contentDescription = null,
                                             modifier = Modifier.fillMaxSize(),
                                             contentScale = ContentScale.Crop
                                         )
                                     } else {
-                                        Text("No Image", fontSize = 10.sp, color = Color.Gray)
+                                        Box(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Description,
+                                                contentDescription = null,
+                                                tint = Color.Gray,
+                                                modifier = Modifier.size(28.dp)
+                                            )
+                                        }
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.width(14.dp))
+                                Spacer(modifier = Modifier.width(16.dp))
 
-                                // Report Details
                                 Column(
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text(
-                                        report.title,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 18.sp,
-                                        color = Color(0xFF333333)
-                                    )
+
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Description,
+                                            contentDescription = null,
+                                            tint = Color(0xFFFA5A62),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(
+                                            text = report.title,
+                                            fontSize = 19.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF222222),
+                                            maxLines = 1
+                                        )
+                                    }
+
+                                    Spacer(Modifier.height(8.dp))
+
+                                    // Category
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Category,
+                                            contentDescription = null,
+                                            tint = Color(0xFF777777),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(
+                                            text = report.category,
+                                            fontSize = 14.sp,
+                                            color = Color(0xFF777777)
+                                        )
+                                    }
+
                                     Spacer(Modifier.height(4.dp))
-                                    Text(
-                                        "Category: ${report.category}",
-                                        fontSize = 14.sp,
-                                        color = Color(0xFF666666)
-                                    )
-                                    Text(
-                                        "Date: ${report.date}",
-                                        fontSize = 14.sp,
-                                        color = Color(0xFF666666)
-                                    )
+
+                                    // Date
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.DateRange,
+                                            contentDescription = null,
+                                            tint = Color(0xFF999999),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(
+                                            text = report.date,
+                                            fontSize = 13.sp,
+                                            color = Color(0xFF999999)
+                                        )
+                                    }
                                 }
 
-                                Button(
+                                // 🔹 View Button with Icon
+                                ElevatedButton(
                                     onClick = { onViewReport(report) },
-                                    modifier = Modifier.height(40.dp),
-                                    shape = RoundedCornerShape(10.dp)
+                                    shape = RoundedCornerShape(14.dp),
+                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                                    elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
                                 ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Visibility,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
                                     Text(
-                                        "View",
+                                        text = "View",
                                         fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }
                         }
+
+
                     }
                 }
             }
         }
     }
 }
-
-
 
 
 @Preview(showBackground = true)
@@ -268,19 +330,12 @@ fun ReportsScreenPreview() {
     }
 }
 
-data class LabreportData(
-    val reportTitle: String = "",
-    val reportCategory: String = "",
-    val date: String = "",
-    val reportID: String = "",
-    val imageUrl: String = "",
-    val time: String = ""
-)
 
 @Composable
 fun ReportDetailsRouteHandler(
     reportId: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    navController: NavHostController
 ) {
     val context = LocalContext.current
     val email = UserPrefs.getEmail(context).replace(".", "_")
@@ -299,7 +354,6 @@ fun ReportDetailsRouteHandler(
     }
 
     if (report == null) {
-        // Show loading animation while fetching
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -309,7 +363,8 @@ fun ReportDetailsRouteHandler(
     } else {
         ReportDetailsScreen(
             report = report!!,
-            onBack = onBack
+            onBack = onBack,
+            navController
         )
     }
 }

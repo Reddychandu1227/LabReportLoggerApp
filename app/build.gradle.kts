@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "madproject.chandu.labreportlogger"
+    namespace = "s3492492project.labreportlogger.chandu"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "madproject.chandu.labreportlogger"
+        applicationId = "s3492492project.labreportlogger.chandu"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -80,5 +80,7 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0")
 
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
 
 }

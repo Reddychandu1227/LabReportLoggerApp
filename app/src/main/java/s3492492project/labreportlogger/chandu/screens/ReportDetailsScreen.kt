@@ -1,17 +1,19 @@
-package madproject.chandu.labreportlogger.screens
+package s3492492project.labreportlogger.chandu.screens
 
-// your model (import or define it in same package)
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.pdf.PdfDocument
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,11 +21,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,7 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,10 +61,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import s3492492project.labreportlogger.chandu.UserPrefs
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -64,24 +76,29 @@ import okhttp3.Request
 @Composable
 fun ReportDetailsScreen(
     report: LabReport,
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    navController: NavHostController
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     var isLoading by remember { mutableStateOf(false) }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
                     scope.launch {
-                        isLoading = true     // show loader
+                        isLoading = true
                         val ok = generatePdfAndShare(context, report)
-                        isLoading = false    // hide loader
+                        isLoading = false
 
                         if (!ok) {
-                            Toast.makeText(context, "Failed to generate PDF", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Failed to generate PDF", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     }
                 },
@@ -92,33 +109,87 @@ fun ReportDetailsScreen(
         },
         topBar = {
             CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
-                ),
-                title = {
-                    Text("Report Details", fontSize = 22.sp, color = Color.Black)
-                },
+                title = { Text("Report Details") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
+                        Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
-                            imageVector = Icons.Default.KeyboardArrowLeft,
-                            contentDescription = "Back",
-                            tint = Color.Black
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Report",
+                            tint = Color.Red
                         )
                     }
+
+                    IconButton(onClick = {
+                        navController.navigate("editReport/${report.reportId}")
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Report"
+                        )
+                    }
+
                 }
             )
         }
+
     ) { padding ->
 
-        // ---------- SHOW LOADING DIALOG ----------
         if (isLoading) {
             LoadingDialog()
         }
 
-        // ---------------- UI CONTENT ----------------
         ReportDetailsContent(report = report, padding = padding)
     }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Report") },
+            text = { Text("Are you sure you want to delete this report?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        deleteReport(report, context, onBack)
+                    }
+                ) {
+                    Text("Delete", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+}
+
+fun deleteReport(
+    report: LabReport,
+    context: Context,
+    onBack: () -> Unit
+) {
+    val email = UserPrefs.getEmail(context).replace(".", "_")
+    val db = FirebaseDatabase.getInstance().reference
+
+    db.child("Myreports")
+        .child(email)
+        .child(report.reportId)
+        .removeValue()
+        .addOnSuccessListener {
+            Toast.makeText(context, "Report deleted", Toast.LENGTH_SHORT).show()
+            onBack()
+        }
+        .addOnFailureListener {
+            Toast.makeText(context, "Delete failed", Toast.LENGTH_SHORT).show()
+        }
 }
 
 
@@ -147,6 +218,14 @@ fun ReportDetailsContent(
     report: LabReport,
     padding: PaddingValues
 ) {
+    val context = LocalContext.current
+    var localReport by remember { mutableStateOf(report) }
+
+
+    var showImageViewer by remember { mutableStateOf(false) }
+    var selectedImageIndex by remember { mutableStateOf(0) }
+
+
     Column(
         modifier = Modifier
             .padding(padding)
@@ -154,7 +233,6 @@ fun ReportDetailsContent(
             .verticalScroll(rememberScrollState())
     ) {
 
-        // ---------------- PREMIUM HEADER ----------------
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -169,26 +247,69 @@ fun ReportDetailsContent(
                 )
                 .padding(20.dp)
         ) {
-            Column(
-                modifier = Modifier.align(Alignment.BottomStart)
-            ) {
-                Text(
-                    text = report.title,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = report.category,
-                    fontSize = 18.sp,
-                    color = Color.White.copy(alpha = 0.9f)
-                )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomStart)
+            )
+            {
+
+
+                Column(
+                    modifier = Modifier
+                ) {
+                    Text(
+                        text = report.title,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = report.category,
+                        fontSize = 18.sp,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
+
+                Spacer(modifier= Modifier.weight(1f))
+
+                Log.e("Test","Report Name - ${localReport.title} , IsFav - ${localReport.isfavorite}")
+
+                IconButton(
+                    onClick = {
+                        toggleFavoriteReport(
+                            context,
+                            localReport.reportId,
+                            localReport.isfavorite
+                        )
+
+                        localReport = localReport.copy(
+                            isfavorite = !localReport.isfavorite
+                        )
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (localReport.isfavorite)
+                            Icons.Default.Star
+                        else
+                            Icons.Default.StarBorder,
+                        contentDescription = "Favorite",
+                        tint = if (localReport.isfavorite)
+                            Color(0xFFFFC107)
+                        else
+                            Color.White,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+
+
+
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ---------------- DETAILS CARD ----------------
         ElevatedCard(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -222,7 +343,6 @@ fun ReportDetailsContent(
 
         Spacer(modifier = Modifier.height(26.dp))
 
-        // ---------------- IMAGES TITLE ----------------
         Text(
             "Attached Images",
             fontSize = 22.sp,
@@ -232,7 +352,6 @@ fun ReportDetailsContent(
 
         Spacer(Modifier.height(14.dp))
 
-        // ---------------- IMAGE LIST ----------------
         if (report.images.isEmpty()) {
             Text(
                 text = "No images attached",
@@ -241,28 +360,65 @@ fun ReportDetailsContent(
                 fontSize = 16.sp
             )
         } else {
-            report.images.forEach { imageUrl ->
+            report.images.forEachIndexed { index, imageUrl ->
+
                 ElevatedCard(
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 10.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .clickable {
+                            selectedImageIndex = index
+                            showImageViewer = true
+                        },
                     shape = RoundedCornerShape(18.dp),
                     elevation = CardDefaults.elevatedCardElevation(6.dp)
                 ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(imageUrl),
-                        contentDescription = "",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp)
-                    )
+
+                    Box {
+
+                        Image(
+                            painter = rememberAsyncImagePainter(imageUrl),
+                            contentDescription = "Report Image",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp)
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .size(36.dp)
+                                .align(Alignment.TopEnd)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.6f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Visibility,
+                                contentDescription = "View Image",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
                 }
             }
+
+
         }
 
         Spacer(modifier = Modifier.height(40.dp))
     }
+
+    if (showImageViewer) {
+        FullScreenImageViewer(
+            images = report.images,
+            startIndex = selectedImageIndex,
+            onClose = { showImageViewer = false }
+        )
+    }
+
 }
 
 
@@ -270,11 +426,9 @@ suspend fun generatePdfAndShare(context: Context, report: LabReport): Boolean {
     return try {
         withContext(Dispatchers.IO) {
 
-            // Create PDF
             val document = PdfDocument()
             var pageNumber = 1
 
-            // Page 1
             val pageInfo = PdfDocument.PageInfo.Builder(1120, 1500, pageNumber).create()
             val page = document.startPage(pageInfo)
             val canvas = page.canvas
@@ -296,7 +450,6 @@ suspend fun generatePdfAndShare(context: Context, report: LabReport): Boolean {
             document.finishPage(page)
             pageNumber++
 
-            // Download image bitmaps
             val client = OkHttpClient()
             for (url in report.images) {
                 val req = Request.Builder().url(url).build()
@@ -362,7 +515,8 @@ suspend fun generatePdfAndShare(context: Context, report: LabReport): Boolean {
                 }
 
                 context.startActivity(
-                    Intent.createChooser(intent, "Share Report PDF").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    Intent.createChooser(intent, "Share Report PDF")
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
             }
 
@@ -373,3 +527,32 @@ suspend fun generatePdfAndShare(context: Context, report: LabReport): Boolean {
         false
     }
 }
+
+
+fun toggleFavoriteReport(
+    context: Context,
+    reportId: String,
+    isFavorite: Boolean
+) {
+    val email = UserPrefs.getEmail(context).replace(".", "_")
+    val db = FirebaseDatabase.getInstance().reference
+
+    db.child("Myreports")
+        .child(email)
+        .child(reportId)
+        .child("isfavorite")
+        .setValue(!isFavorite)
+        .addOnSuccessListener {
+
+            val message = if (!isFavorite)
+                "Added to favorites ⭐"
+            else
+                "Removed from favorites"
+
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+        .addOnFailureListener {
+            Toast.makeText(context, "Failed to update favorite", Toast.LENGTH_SHORT).show()
+        }
+}
+

@@ -1,20 +1,20 @@
-package madproject.chandu.labreportlogger
+package s3492492project.labreportlogger.chandu
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.StackedBarChart
+import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -26,13 +26,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import madproject.chandu.labreportlogger.screens.LabReport
-import madproject.chandu.labreportlogger.screens.MyReportsScreen
-import madproject.chandu.labreportlogger.screens.ProfileScreen
-import madproject.chandu.labreportlogger.screens.ReportDetailsRouteHandler
-import madproject.chandu.labreportlogger.screens.ReportDetailsScreen
-import madproject.chandu.labreportlogger.screens.UploadReportScreen
-import madproject.chandu.labreportlogger.ui.theme.crimsonRed
+import s3492492project.labreportlogger.chandu.screens.EditReportScreen
+import s3492492project.labreportlogger.chandu.screens.FavoriteReportsScreen
+import s3492492project.labreportlogger.chandu.screens.MyReportsScreen
+import s3492492project.labreportlogger.chandu.screens.ProfileScreen
+import s3492492project.labreportlogger.chandu.screens.ReportDetailsRouteHandler
+import s3492492project.labreportlogger.chandu.screens.ReportStatisticsScreen
+import s3492492project.labreportlogger.chandu.screens.UploadReportScreen
+import s3492492project.labreportlogger.chandu.ui.theme.crimsonRed
 
 
 @Preview(showBackground = true)
@@ -57,8 +58,10 @@ fun HomeScreen(homenavController: NavController) {
 }
 
 sealed class BottomNavItem(val route: String, val title: String, val icon: ImageVector) {
-    object Upload : BottomNavItem("upload", "Upload Report", Icons.Default.Person)
-    object Reports : BottomNavItem("reports", "My Reports", Icons.Default.AccountBox)
+    object Stats : BottomNavItem("statistics", "Lab Report Logger App", Icons.Default.StackedBarChart)
+    object Upload : BottomNavItem("upload", "Add Report", Icons.Default.UploadFile)
+    object Reports : BottomNavItem("reports", "My Reports", Icons.Default.Description)
+    object FavouriteReports : BottomNavItem("favorites", "Favourites", Icons.Default.Favorite)
     object Profile : BottomNavItem("profile", "Profile", Icons.Default.Person)
 }
 
@@ -66,42 +69,40 @@ sealed class BottomNavItem(val route: String, val title: String, val icon: Image
 @Composable
 fun NavigationGraph(navController: NavHostController,homenavController: NavController) {
 
-    val context = LocalContext.current
-
-
     NavHost(
         navController = navController,
-        startDestination = BottomNavItem.Upload.route
+        startDestination = BottomNavItem.Stats.route
     ) {
 
-        // ---------------- Upload Screen ----------------
+        composable(BottomNavItem.Stats.route) {
+            ReportStatisticsScreen(
+                onGoToReports = {
+                }
+            )
+        }
+
         composable(BottomNavItem.Upload.route) {
             UploadReportScreen()
         }
 
-        // ---------------- Reports List Screen ----------------
         composable(BottomNavItem.Reports.route) {
             MyReportsScreen(onViewReport = { report ->
                 navController.navigate("reportDetails/${report.reportId}")
             })
         }
 
-        // ---------------- Profile ----------------
         composable(BottomNavItem.Profile.route) {
 
             val context = LocalContext.current
 
             ProfileScreen(
                 onLogout = {
-                    // Mark user logged out
                     UserPrefs.markLoginStatus(context, false)
 
-                    // 1. Clear bottom-nav controller backstack completely
                     navController.navigate(BottomNavItem.Upload.route) {
                         popUpTo(0) { inclusive = true }
                     }
 
-                    // 2. Navigate using HOME nav controller to login
                     homenavController.navigate(AppScreens.Login.route) {
                         popUpTo(0) { inclusive = true }
                         launchSingleTop = true
@@ -111,8 +112,6 @@ fun NavigationGraph(navController: NavHostController,homenavController: NavContr
         }
 
 
-
-        // ---------------- Report Details Screen ----------------
         composable(
             route = "reportDetails/{reportId}"
         ) { backStackEntry ->
@@ -121,9 +120,25 @@ fun NavigationGraph(navController: NavHostController,homenavController: NavContr
 
             ReportDetailsRouteHandler(
                 reportId = reportId,
+                onBack = { navController.popBackStack() },
+                navController
+            )
+        }
+
+        composable("editReport/{reportId}") { backStack ->
+            val id = backStack.arguments?.getString("reportId") ?: ""
+            EditReportScreen(reportId = id, onBack = { navController.popBackStack() })
+        }
+
+        composable(BottomNavItem.FavouriteReports.route) {
+            FavoriteReportsScreen(
+                onViewReport = { report ->
+                    navController.navigate("reportDetails/${report.reportId}")
+                },
                 onBack = { navController.popBackStack() }
             )
         }
+
     }
 }
 
@@ -132,8 +147,10 @@ fun NavigationGraph(navController: NavHostController,homenavController: NavContr
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
+        BottomNavItem.Stats,
         BottomNavItem.Upload,
         BottomNavItem.Reports,
+        BottomNavItem.FavouriteReports,
         BottomNavItem.Profile
     )
 
@@ -144,7 +161,7 @@ fun BottomNavigationBar(navController: NavHostController) {
         items.forEach { item ->
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.title) },
-                label = { Text(item.title) },
+
                 selected = currentRoute == item.route,
                 onClick = {
                     navController.navigate(item.route) {
@@ -154,7 +171,7 @@ fun BottomNavigationBar(navController: NavHostController) {
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = crimsonRed,   // 👈 removes blue background
+                    indicatorColor = crimsonRed,
                     selectedIconColor = Color.White,
                     selectedTextColor = Color.Black,
                     unselectedIconColor = Color.Gray,

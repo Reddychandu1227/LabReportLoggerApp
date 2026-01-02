@@ -1,4 +1,4 @@
-package madproject.chandu.labreportlogger.ui.theme
+package s3492492project.labreportlogger.chandu.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
